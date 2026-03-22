@@ -1,0 +1,119 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 225 44% 7%;
+    --foreground: 210 20% 90%;
+    --card: 225 35% 10%;
+    --card-foreground: 210 20% 90%;
+    --popover: 225 35% 12%;
+    --popover-foreground: 210 20% 90%;
+    --primary: 182 100% 50%;
+    --primary-foreground: 225 44% 7%;
+    --secondary: 225 25% 15%;
+    --secondary-foreground: 210 20% 90%;
+    --muted: 225 20% 18%;
+    --muted-foreground: 220 15% 55%;
+    --accent: 111 100% 54%;
+    --accent-foreground: 225 44% 7%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 220 20% 22%;
+    --input: 220 20% 22%;
+    --ring: 182 100% 50%;
+    --radius: 0.75rem;
+    --sidebar-background: 225 35% 8%;
+    --sidebar-foreground: 210 20% 90%;
+    --sidebar-primary: 182 100% 50%;
+    --sidebar-primary-foreground: 225 44% 7%;
+    --sidebar-accent: 225 25% 15%;
+    --sidebar-accent-foreground: 210 20% 90%;
+    --sidebar-border: 220 20% 20%;
+    --sidebar-ring: 182 100% 50%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+@layer utilities {
+  .glow-primary {
+    box-shadow: 0 0 20px hsl(182 100% 50% / 0.3), 0 0 60px hsl(182 100% 50% / 0.08);
+  }
+  .glow-accent {
+    box-shadow: 0 0 20px hsl(111 100% 54% / 0.3), 0 0 60px hsl(111 100% 54% / 0.08);
+  }
+  .glow-primary-sm {
+    box-shadow: 0 0 10px hsl(182 100% 50% / 0.25);
+  }
+  .text-glow-primary {
+    text-shadow: 0 0 20px hsl(182 100% 50% / 0.5), 0 0 40px hsl(182 100% 50% / 0.2);
+  }
+  .text-glow-accent {
+    text-shadow: 0 0 20px hsl(111 100% 54% / 0.5);
+  }
+  .glass {
+    background: hsl(225 35% 10% / 0.7);
+    backdrop-filter: blur(16px);
+    border: 1px solid hsl(220 20% 22% / 0.6);
+  }
+  .glass-strong {
+    background: hsl(225 35% 10% / 0.85);
+    backdrop-filter: blur(24px);
+    border: 1px solid hsl(220 20% 25% / 0.8);
+  }
+  .grid-bg {
+    background-image:
+      linear-gradient(hsl(220 20% 20% / 0.15) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(220 20% 20% / 0.15) 1px, transparent 1px);
+    background-size: 50px 50px;
+  }
+  .cyber-border {
+    border: 1px solid hsl(182 100% 50% / 0.2);
+  }
+  .cyber-border-accent {
+    border: 1px solid hsl(111 100% 54% / 0.2);
+  }
+}
+
+@layer components {
+  .btn-cyber {
+    @apply relative px-8 py-3 font-display font-semibold text-sm uppercase tracking-widest rounded-lg transition-all duration-300;
+    background: linear-gradient(135deg, hsl(182 100% 50% / 0.15), hsl(182 100% 50% / 0.05));
+    border: 1px solid hsl(182 100% 50% / 0.4);
+    color: hsl(182 100% 50%);
+  }
+  .btn-cyber:hover {
+    background: linear-gradient(135deg, hsl(182 100% 50% / 0.25), hsl(182 100% 50% / 0.1));
+    box-shadow: 0 0 30px hsl(182 100% 50% / 0.2), inset 0 0 30px hsl(182 100% 50% / 0.05);
+    border-color: hsl(182 100% 50% / 0.7);
+  }
+  .btn-cyber-accent {
+    @apply relative px-6 py-2.5 font-display font-semibold text-sm uppercase tracking-wider rounded-lg transition-all duration-300;
+    background: linear-gradient(135deg, hsl(111 100% 54% / 0.15), hsl(111 100% 54% / 0.05));
+    border: 1px solid hsl(111 100% 54% / 0.4);
+    color: hsl(111 100% 54%);
+  }
+  .btn-cyber-accent:hover {
+    background: linear-gradient(135deg, hsl(111 100% 54% / 0.25), hsl(111 100% 54% / 0.1));
+    box-shadow: 0 0 20px hsl(111 100% 54% / 0.15);
+    border-color: hsl(111 100% 54% / 0.7);
+  }
+  .btn-cyber-sm {
+    @apply px-4 py-2 text-xs;
+  }
+  .section-container {
+    @apply max-w-6xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+}
