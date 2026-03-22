@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
-import { Shield, Cpu, Activity } from 'lucide-react';
+import { Shield, Cpu, Activity, GraduationCap, Baby } from 'lucide-react';
 
 export function AppLayout() {
   return (
@@ -23,11 +23,25 @@ export function AppLayout() {
         
         <nav className="hidden md:flex items-center justify-center gap-2 bg-black/40 p-1.5 rounded-xl border cyber-border shadow-2xl backdrop-blur-md">
           <NavLink
+            to="/architecture"
+            className={({ isActive }) =>
+              `px-5 py-2 rounded-lg font-mono text-sm uppercase tracking-wider transition-all duration-300 ${
+                isActive
+                  ? 'bg-blue-500/20 text-blue-400 border border-blue-500/50 shadow-[0_0_20px_rgba(59,130,246,0.2)]'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-white/5 border border-transparent'
+              }`
+            }
+          >
+            <div className="flex items-center gap-2">
+              <Shield className="w-4 h-4" /> Threat Models
+            </div>
+          </NavLink>
+          <NavLink
             to="/phe"
             className={({ isActive }) =>
               `px-5 py-2 rounded-lg font-mono text-sm uppercase tracking-wider transition-all duration-300 ${
                 isActive
-                  ? 'bg-primary/20 text-primary border border-primary/50 shadow-[0_0_20px_rgba(0,255,255,0.2)]'
+                  ? 'bg-primary/20 text-primary border border-primary/50 shadow-[0_0_20px_rgba(0,255,128,0.2)]'
                   : 'text-muted-foreground hover:text-foreground hover:bg-white/5 border border-transparent'
               }`
             }
@@ -41,7 +55,7 @@ export function AppLayout() {
             className={({ isActive }) =>
               `px-5 py-2 rounded-lg font-mono text-sm uppercase tracking-wider transition-all duration-300 ${
                 isActive
-                  ? 'bg-accent/20 text-accent border border-accent/50 shadow-[0_0_20px_rgba(0,255,0,0.2)]'
+                  ? 'bg-accent/20 text-accent border border-accent/50 shadow-[0_0_20px_rgba(0,255,255,0.2)]'
                   : 'text-muted-foreground hover:text-foreground hover:bg-white/5 border border-transparent'
               }`
             }
@@ -55,7 +69,7 @@ export function AppLayout() {
             className={({ isActive }) =>
               `px-5 py-2 rounded-lg font-mono text-sm uppercase tracking-wider transition-all duration-300 ${
                 isActive
-                  ? 'bg-primary/20 text-primary border border-primary/50 shadow-[0_0_20px_rgba(0,255,255,0.2)]'
+                  ? 'bg-primary/20 text-primary border border-primary/50 shadow-[0_0_20px_rgba(0,255,128,0.2)]'
                   : 'text-muted-foreground hover:text-foreground hover:bg-white/5 border border-transparent'
               }`
             }
@@ -64,10 +78,10 @@ export function AppLayout() {
           </NavLink>
         </nav>
 
-        <div className="w-1/3 flex justify-end">
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-500/10 border border-green-500/30">
+        <div className="w-1/3 flex justify-end items-center gap-3">
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-green-500/10 border border-green-500/30">
             <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-            <span className="text-xs font-mono text-green-400 font-medium">SYSTEM SECURE</span>
+            <span className="text-xs font-mono text-green-400 font-medium">SECURE</span>
           </div>
         </div>
       </header>

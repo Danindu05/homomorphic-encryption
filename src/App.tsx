@@ -9,6 +9,7 @@ import Index from "./pages/Index";
 import PheMode from "./pages/PheMode";
 import FheMode from "./pages/FheMode";
 import UseCases from "./pages/UseCases";
+import Architecture from "./pages/Architecture";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -16,10 +17,11 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <BrowserRouter>
-        <Routes>
+    <BrowserRouter>
+      <Routes>
           <Route path="/" element={<AppLayout />}>
             <Route index element={<Index />} />
+            <Route path="architecture" element={<Architecture />} />
             <Route path="phe" element={<PheMode />} />
             <Route path="fhe" element={<FheMode />} />
             <Route path="use-cases" element={<UseCases />} />
