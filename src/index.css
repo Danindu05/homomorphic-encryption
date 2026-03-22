@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -10,28 +12,28 @@
     --card-foreground: 210 20% 90%;
     --popover: 225 35% 12%;
     --popover-foreground: 210 20% 90%;
-    --primary: 182 100% 50%;
+    --primary: 160 100% 45%;
     --primary-foreground: 225 44% 7%;
     --secondary: 225 25% 15%;
     --secondary-foreground: 210 20% 90%;
     --muted: 225 20% 18%;
     --muted-foreground: 220 15% 55%;
-    --accent: 111 100% 54%;
+    --accent: 190 100% 50%;
     --accent-foreground: 225 44% 7%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 210 40% 98%;
     --border: 220 20% 22%;
     --input: 220 20% 22%;
-    --ring: 182 100% 50%;
+    --ring: 160 100% 45%;
     --radius: 0.75rem;
     --sidebar-background: 225 35% 8%;
     --sidebar-foreground: 210 20% 90%;
-    --sidebar-primary: 182 100% 50%;
+    --sidebar-primary: 160 100% 45%;
     --sidebar-primary-foreground: 225 44% 7%;
     --sidebar-accent: 225 25% 15%;
     --sidebar-accent-foreground: 210 20% 90%;
     --sidebar-border: 220 20% 20%;
-    --sidebar-ring: 182 100% 50%;
+    --sidebar-ring: 160 100% 45%;
   }
 }
 
@@ -40,75 +42,96 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground font-sans antialiased;
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', system-ui, sans-serif;
   }
   html {
     scroll-behavior: smooth;
   }
+  /* Custom scrollbars */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: hsl(220 20% 25%); border-radius: 999px; }
+  ::-webkit-scrollbar-thumb:hover { background: hsl(220 20% 35%); }
 }
 
 @layer utilities {
+  .font-display {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 700;
+  }
+  .font-mono {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  }
   .glow-primary {
-    box-shadow: 0 0 20px hsl(182 100% 50% / 0.3), 0 0 60px hsl(182 100% 50% / 0.08);
+    box-shadow: 0 0 20px hsl(160 100% 45% / 0.25), 0 0 60px hsl(160 100% 45% / 0.06);
   }
   .glow-accent {
-    box-shadow: 0 0 20px hsl(111 100% 54% / 0.3), 0 0 60px hsl(111 100% 54% / 0.08);
+    box-shadow: 0 0 20px hsl(190 100% 50% / 0.25), 0 0 60px hsl(190 100% 50% / 0.06);
   }
   .glow-primary-sm {
-    box-shadow: 0 0 10px hsl(182 100% 50% / 0.25);
+    box-shadow: 0 0 10px hsl(160 100% 45% / 0.2);
   }
   .text-glow-primary {
-    text-shadow: 0 0 20px hsl(182 100% 50% / 0.5), 0 0 40px hsl(182 100% 50% / 0.2);
+    text-shadow: 0 0 30px hsl(160 100% 45% / 0.4), 0 0 60px hsl(160 100% 45% / 0.15);
   }
   .text-glow-accent {
-    text-shadow: 0 0 20px hsl(111 100% 54% / 0.5);
+    text-shadow: 0 0 20px hsl(190 100% 50% / 0.4);
   }
   .glass {
-    background: hsl(225 35% 10% / 0.7);
-    backdrop-filter: blur(16px);
-    border: 1px solid hsl(220 20% 22% / 0.6);
+    background: hsl(225 35% 10% / 0.6);
+    backdrop-filter: blur(20px) saturate(1.4);
+    border: 1px solid hsl(220 20% 22% / 0.5);
   }
   .glass-strong {
-    background: hsl(225 35% 10% / 0.85);
-    backdrop-filter: blur(24px);
-    border: 1px solid hsl(220 20% 25% / 0.8);
+    background: hsl(225 35% 9% / 0.88);
+    backdrop-filter: blur(28px) saturate(1.5);
+    border: 1px solid hsl(220 20% 25% / 0.7);
   }
   .grid-bg {
     background-image:
-      linear-gradient(hsl(220 20% 20% / 0.15) 1px, transparent 1px),
-      linear-gradient(90deg, hsl(220 20% 20% / 0.15) 1px, transparent 1px);
-    background-size: 50px 50px;
+      radial-gradient(ellipse at 50% 0%, hsl(160 100% 45% / 0.04) 0%, transparent 60%),
+      linear-gradient(hsl(220 20% 20% / 0.12) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(220 20% 20% / 0.12) 1px, transparent 1px);
+    background-size: 100% 100%, 60px 60px, 60px 60px;
   }
   .cyber-border {
-    border: 1px solid hsl(182 100% 50% / 0.2);
+    border: 1px solid hsl(160 100% 45% / 0.15);
   }
   .cyber-border-accent {
-    border: 1px solid hsl(111 100% 54% / 0.2);
+    border: 1px solid hsl(190 100% 50% / 0.15);
   }
+  .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+  .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+  .custom-scrollbar::-webkit-scrollbar-thumb { background: hsl(160 100% 45% / 0.2); border-radius: 999px; }
 }
 
 @layer components {
   .btn-cyber {
-    @apply relative px-8 py-3 font-display font-semibold text-sm uppercase tracking-widest rounded-lg transition-all duration-300;
-    background: linear-gradient(135deg, hsl(182 100% 50% / 0.15), hsl(182 100% 50% / 0.05));
-    border: 1px solid hsl(182 100% 50% / 0.4);
-    color: hsl(182 100% 50%);
+    @apply relative px-8 py-3 font-semibold text-sm uppercase tracking-widest rounded-xl transition-all duration-300;
+    font-family: 'Inter', system-ui, sans-serif;
+    background: linear-gradient(135deg, hsl(160 100% 45% / 0.12), hsl(160 100% 45% / 0.04));
+    border: 1px solid hsl(160 100% 45% / 0.3);
+    color: hsl(160 100% 55%);
   }
   .btn-cyber:hover {
-    background: linear-gradient(135deg, hsl(182 100% 50% / 0.25), hsl(182 100% 50% / 0.1));
-    box-shadow: 0 0 30px hsl(182 100% 50% / 0.2), inset 0 0 30px hsl(182 100% 50% / 0.05);
-    border-color: hsl(182 100% 50% / 0.7);
+    background: linear-gradient(135deg, hsl(160 100% 45% / 0.22), hsl(160 100% 45% / 0.08));
+    box-shadow: 0 0 40px hsl(160 100% 45% / 0.15), inset 0 0 30px hsl(160 100% 45% / 0.04);
+    border-color: hsl(160 100% 45% / 0.6);
+    transform: translateY(-1px);
   }
   .btn-cyber-accent {
-    @apply relative px-6 py-2.5 font-display font-semibold text-sm uppercase tracking-wider rounded-lg transition-all duration-300;
-    background: linear-gradient(135deg, hsl(111 100% 54% / 0.15), hsl(111 100% 54% / 0.05));
-    border: 1px solid hsl(111 100% 54% / 0.4);
-    color: hsl(111 100% 54%);
+    @apply relative px-6 py-2.5 font-semibold text-sm uppercase tracking-wider rounded-xl transition-all duration-300;
+    font-family: 'Inter', system-ui, sans-serif;
+    background: linear-gradient(135deg, hsl(190 100% 50% / 0.12), hsl(190 100% 50% / 0.04));
+    border: 1px solid hsl(190 100% 50% / 0.3);
+    color: hsl(190 100% 60%);
   }
   .btn-cyber-accent:hover {
-    background: linear-gradient(135deg, hsl(111 100% 54% / 0.25), hsl(111 100% 54% / 0.1));
-    box-shadow: 0 0 20px hsl(111 100% 54% / 0.15);
-    border-color: hsl(111 100% 54% / 0.7);
+    background: linear-gradient(135deg, hsl(190 100% 50% / 0.22), hsl(190 100% 50% / 0.08));
+    box-shadow: 0 0 30px hsl(190 100% 50% / 0.12);
+    border-color: hsl(190 100% 50% / 0.6);
+    transform: translateY(-1px);
   }
   .btn-cyber-sm {
     @apply px-4 py-2 text-xs;
@@ -116,4 +139,25 @@
   .section-container {
     @apply max-w-6xl mx-auto px-4 sm:px-6 lg:px-8;
   }
+}
+
+/* Smooth micro-animations */
+@keyframes pulse-glow {
+  0%, 100% { opacity: 1; filter: drop-shadow(0 0 6px hsl(160 100% 45% / 0.4)); }
+  50% { opacity: 0.85; filter: drop-shadow(0 0 12px hsl(160 100% 45% / 0.6)); }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-6px); }
+}
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.animate-pulse-glow { animation: pulse-glow 2.5s ease-in-out infinite; }
+.animate-float { animation: float 4s ease-in-out infinite; }
+.animate-shimmer {
+  background: linear-gradient(90deg, transparent 0%, hsl(160 100% 45% / 0.08) 50%, transparent 100%);
+  background-size: 200% 100%;
+  animation: shimmer 3s ease-in-out infinite;
 }

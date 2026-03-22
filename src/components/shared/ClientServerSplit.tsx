@@ -1,5 +1,5 @@
 import React from 'react';
-import { Shield, Cloud, Eye, EyeOff, Brain } from 'lucide-react';
+import { Shield, Cloud, Eye, EyeOff, Brain, Lightbulb } from 'lucide-react';
 
 interface ClientServerSplitProps {
   clientContent: React.ReactNode;
@@ -9,60 +9,58 @@ interface ClientServerSplitProps {
 }
 
 export function ClientServerSplit({ clientContent, serverContent, attackerContent, narration }: ClientServerSplitProps) {
-
   return (
-    <div className="w-full flex flex-col gap-6">
+    <div className="w-full flex flex-col gap-5">
       {/* NARRATION PANEL */}
       {narration && (
-        <div className="w-full bg-primary/10 border border-primary/40 p-4 rounded-xl flex items-start sm:items-center gap-4 shadow-[0_0_20px_rgba(0,255,128,0.15)] relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-primary/20 blur-[50px] -z-10 rounded-full"></div>
-          <div className="p-2 bg-primary/20 rounded-lg shrink-0">
-            <Brain className="w-6 h-6 text-primary animate-pulse" />
+        <div className="w-full bg-white/[0.03] border border-primary/20 p-5 rounded-2xl flex items-start gap-4 relative overflow-hidden backdrop-blur-sm">
+          <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-primary/30 to-transparent"></div>
+          <div className="p-2.5 bg-primary/10 rounded-xl border border-primary/15 shrink-0">
+            <Brain className="w-5 h-5 text-primary" />
           </div>
-          <div>
-            <h3 className="text-xs font-mono font-bold text-primary mb-1 uppercase tracking-widest">🧠 What is happening right now?</h3>
-            <p className="text-sm font-sans text-white/90 leading-relaxed">
+          <div className="flex-1 min-w-0">
+            <h3 className="text-[10px] font-mono font-semibold text-primary mb-1.5 uppercase tracking-[0.15em]">
+              What is happening right now
+            </h3>
+            <p className="text-sm text-foreground/80 leading-relaxed">
               {narration}
             </p>
-            <div className="mt-3 pt-3 border-t border-primary/20 text-xs font-mono text-primary/80">
-              <span className="font-bold text-primary">💡 Key Insight:</span> Computation is performed without revealing the underlying data.
+            <div className="mt-3 pt-3 border-t border-white/5 flex items-center gap-2 text-xs text-primary/70">
+              <Lightbulb className="w-3.5 h-3.5 text-primary/60 shrink-0" />
+              <span>Computation is performed without revealing the underlying data.</span>
             </div>
           </div>
         </div>
       )}
 
       {/* THREE COLUMN SPLIT */}
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_200px_1fr] gap-6 w-full items-stretch">
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_180px_1fr] gap-4 w-full items-stretch">
         {/* Client Zone */}
-        <div className="flex flex-col rounded-xl border border-blue-500/30 bg-blue-950/10 overflow-hidden shadow-[0_0_30px_rgba(59,130,246,0.05)] h-full">
-          <div className="bg-blue-500/10 border-b border-blue-500/20 px-4 py-3 flex items-center justify-between shrink-0">
-            <div className="flex items-center gap-2">
-              <Shield className="w-5 h-5 text-blue-400 group-hover:scale-110 transition-transform" />
+        <div className="flex flex-col rounded-2xl border border-blue-500/20 bg-blue-500/[0.03] overflow-hidden h-full">
+          <div className="bg-blue-500/[0.06] border-b border-blue-500/10 px-4 py-3 flex items-center justify-between shrink-0">
+            <div className="flex items-center gap-2.5">
+              <Shield className="w-4 h-4 text-blue-400" />
               <div className="flex flex-col">
-                <span className="font-mono text-xs font-bold text-blue-400 tracking-widest uppercase">Trusted Client</span>
-                <span className="font-mono text-[9px] text-blue-400/60 uppercase">Plaintext Boundary</span>
+                <span className="font-mono text-[11px] font-semibold text-blue-400 tracking-wider uppercase">Trusted Client</span>
+                <span className="font-mono text-[8px] text-blue-400/50 uppercase tracking-wider">Plaintext Boundary</span>
               </div>
             </div>
-            <p className="text-[10px] text-blue-400/70 font-mono hidden sm:block text-right max-w-[120px] leading-tight">
-              Holds Private Key
-            </p>
+            <span className="text-[9px] text-blue-400/50 font-mono hidden sm:block">Holds sk</span>
           </div>
-          <div className="p-4 sm:p-6 flex-1 flex flex-col gap-4 overflow-y-auto">
+          <div className="p-4 sm:p-5 flex-1 flex flex-col gap-4 overflow-y-auto custom-scrollbar">
             {clientContent}
           </div>
         </div>
 
         {/* Network / Middle */}
-        <div className="flex flex-col items-center justify-center p-2 min-w-[120px] gap-8 relative shrink-0">
-          <div className="absolute inset-0 border-x border-dashed border-red-500/20 pointer-events-none -mx-2 h-full"></div>
+        <div className="flex flex-col items-center justify-center p-2 min-w-[100px] gap-6 relative shrink-0">
+          <div className="absolute inset-0 border-x border-dashed border-red-500/10 pointer-events-none -mx-2 h-full"></div>
           {attackerContent && (
-            <div className="flex flex-col items-center p-4 border border-red-500/30 bg-red-950/20 rounded-lg backdrop-blur-md shadow-[0_0_15px_rgba(239,68,68,0.1)] w-full relative z-10">
-              <Eye className="w-6 h-6 text-red-500 mb-2 animate-pulse" />
-              <div className="flex flex-col items-center">
-                <span className="text-[10px] text-red-400 font-mono font-bold uppercase tracking-wider text-center">Network Attacker</span>
-                <span className="font-mono text-[8px] text-red-400/60 uppercase">Ciphertext Interception</span>
-              </div>
-              <div className="mt-3 text-[10px] text-red-300/90 text-center leading-tight tracking-tight w-full break-all">
+            <div className="flex flex-col items-center p-3 border border-red-500/20 bg-red-500/[0.04] rounded-xl backdrop-blur-sm w-full relative z-10">
+              <Eye className="w-5 h-5 text-red-500/70 mb-2" />
+              <span className="text-[9px] text-red-400/80 font-mono font-semibold uppercase tracking-wider text-center">Network Attacker</span>
+              <span className="font-mono text-[7px] text-red-400/40 uppercase mt-0.5">Ciphertext Interception</span>
+              <div className="mt-2 text-[9px] text-red-300/60 text-center leading-tight w-full break-all">
                 {attackerContent}
               </div>
             </div>
@@ -70,23 +68,21 @@ export function ClientServerSplit({ clientContent, serverContent, attackerConten
         </div>
 
         {/* Server Zone */}
-        <div className="flex flex-col rounded-xl border border-orange-500/30 bg-orange-950/10 overflow-hidden shadow-[0_0_30px_rgba(249,115,22,0.05)] h-full">
-          <div className="bg-orange-500/10 border-b border-orange-500/20 px-4 py-3 flex items-center justify-between shrink-0">
-            <div className="flex items-center gap-2">
-              <Cloud className="w-5 h-5 text-orange-400" />
+        <div className="flex flex-col rounded-2xl border border-orange-500/20 bg-orange-500/[0.03] overflow-hidden h-full">
+          <div className="bg-orange-500/[0.06] border-b border-orange-500/10 px-4 py-3 flex items-center justify-between shrink-0">
+            <div className="flex items-center gap-2.5">
+              <Cloud className="w-4 h-4 text-orange-400" />
               <div className="flex flex-col">
-                <span className="font-mono text-xs font-bold text-orange-400 tracking-widest uppercase truncate max-w-[140px]" title="Untrusted Server (Honest-but-Curious)">Untrusted Server</span>
-                <span className="font-mono text-[9px] text-orange-400/60 uppercase">Honest-but-Curious</span>
+                <span className="font-mono text-[11px] font-semibold text-orange-400 tracking-wider uppercase">Untrusted Server</span>
+                <span className="font-mono text-[8px] text-orange-400/50 uppercase tracking-wider">Honest-but-Curious</span>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <EyeOff className="w-4 h-4 text-orange-400/50 hidden sm:block" />
-              <p className="text-[10px] text-orange-400/70 font-mono hidden sm:block text-right max-w-[120px] leading-tight">
-                Ciphertext ONLY
-              </p>
+            <div className="flex items-center gap-1.5">
+              <EyeOff className="w-3 h-3 text-orange-400/40 hidden sm:block" />
+              <span className="text-[9px] text-orange-400/50 font-mono hidden sm:block">Ciphertext Only</span>
             </div>
           </div>
-          <div className="p-4 sm:p-6 flex-1 flex flex-col gap-4 overflow-y-auto">
+          <div className="p-4 sm:p-5 flex-1 flex flex-col gap-4 overflow-y-auto custom-scrollbar">
             {serverContent}
           </div>
         </div>

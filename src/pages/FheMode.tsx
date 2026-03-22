@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Activity, Lock, Unlock, Key, Calculator, Filter, RefreshCw, Layers, Send, Server, Eye, EyeOff, ChevronRight } from 'lucide-react';
+import { Activity, Lock, Unlock, Key, Calculator, Filter, RefreshCw, Layers, Send, Server, ChevronRight, AlertTriangle } from 'lucide-react';
 import { FheSimulator, FheContext, FheKeyPair, FheCiphertext } from '../lib/crypto/fhe';
 import { ClientServerSplit } from '../components/shared/ClientServerSplit';
 import { DataFlowArrow } from '../components/shared/DataFlowArrow';
@@ -48,8 +48,8 @@ export default function FheMode() {
     if (phase === 'at-server' && cipherResult) return `The server evaluated the ${computeType} circuit blindly. Noise grew significantly. Ready to return.`;
     if (phase === 'to-client') return "Returning the evaluated ciphertext back to the Trusted Client domain.";
     if (phase === 'at-client' && decryptedResult === null) return "The Client received the computed ciphertext. It will now attempt decryption using its Secret Key.";
-    if (phase === 'at-client' && Number.isNaN(decryptedResult)) return "Decryption FAILED. The mathematical noise grew too large during compute and corrupted the underlying exact message polynomial.";
-    if (phase === 'at-client' && decryptedResult !== null) return "Decryption successful! The noise remained within algorithmic bounds, so the original underlying message was safely recovered.";
+    if (phase === 'at-client' && Number.isNaN(decryptedResult)) return "Decryption FAILED. The mathematical noise grew too large and corrupted the message polynomial.";
+    if (phase === 'at-client' && decryptedResult !== null) return "Decryption successful! The noise remained within bounds, so the original message was safely recovered.";
     return "Waiting for action...";
   };
 
@@ -62,16 +62,9 @@ export default function FheMode() {
       const newKeys = await FheSimulator.generateKeys(ctx);
       setKeys(newKeys);
       addLog('Generated CKKS Parameters & Keys (Simulated)', performance.now() - start);
-      
-      setCipherA(null);
-      setCipherB(null);
-      setCipherResult(null);
-      setDecryptedResult(null);
-      setPhase('idle');
+      setCipherA(null); setCipherB(null); setCipherResult(null); setDecryptedResult(null); setPhase('idle');
       setNoiseHistory([{ step: 0, noise: 0, label: 'Init' }]);
-    } catch (e) {
-      console.error(e);
-    }
+    } catch (e) { console.error(e); }
     setIsGenerating(false);
   };
 
@@ -82,27 +75,17 @@ export default function FheMode() {
     try {
       const cA = await FheSimulator.encrypt(Number(inputA), keys.publicKey);
       const cB = await FheSimulator.encrypt(Number(inputB), keys.publicKey);
-      
-      setCipherA(cA);
-      setCipherB(cB);
+      setCipherA(cA); setCipherB(cB);
       addLog(`Encrypted values ${inputA} and ${inputB}`, performance.now() - start, cA.noiseLevel);
-      
-      setCipherResult(null);
-      setDecryptedResult(null);
-      setPhase('idle');
-    } catch (e) {
-      console.error(e);
-    }
+      setCipherResult(null); setDecryptedResult(null); setPhase('idle');
+    } catch (e) { console.error(e); }
     setIsEncrypting(false);
   };
 
   const transmitToServer = () => {
     setPhase('to-server');
     addLog('Transmitting ciphertexts via untrusted network');
-    setTimeout(() => {
-      setPhase('at-server');
-      addLog('Ciphertexts arrived at Server safely');
-    }, 2000);
+    setTimeout(() => { setPhase('at-server'); addLog('Ciphertexts arrived at Server safely'); }, 2000);
   };
 
   const handleCompute = async () => {
@@ -119,19 +102,14 @@ export default function FheMode() {
         addLog(`Homomorphic Multiply: E(${inputA}) ⊗ E(${inputB})`, performance.now() - start, res.noiseLevel);
       }
       setCipherResult(res);
-    } catch (e) {
-      console.error(e);
-    }
+    } catch (e) { console.error(e); }
     setIsComputing(false);
   };
 
   const transmitToClient = () => {
     setPhase('to-client');
     addLog('Returning encrypted result via untrusted network');
-    setTimeout(() => {
-      setPhase('at-client');
-      addLog('Result arrived at Client');
-    }, 2000);
+    setTimeout(() => { setPhase('at-client'); addLog('Result arrived at Client'); }, 2000);
   };
 
   const handleDecrypt = async () => {
@@ -147,9 +125,7 @@ export default function FheMode() {
         setDecryptedResult(res);
         addLog(`Decrypted via Secret Key: ${res}`, performance.now() - start);
       }
-    } catch(e) {
-      console.error(e);
-    }
+    } catch(e) { console.error(e); }
     setIsDecrypting(false);
   };
 
@@ -158,9 +134,9 @@ export default function FheMode() {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       return (
-        <div className="bg-black/90 border cyber-border p-3 rounded-lg shadow-xl font-mono text-xs">
-          <p className="text-white font-bold mb-1">{data.label}</p>
-          <p className={data.noise >= 100 ? 'text-red-500 font-bold' : 'text-accent'}>Noise: {data.noise}%</p>
+        <div className="bg-black/95 border border-white/10 p-3 rounded-xl shadow-2xl font-mono text-xs backdrop-blur-md">
+          <p className="text-white font-semibold mb-1">{data.label}</p>
+          <p className={data.noise >= 100 ? 'text-red-400 font-bold' : 'text-accent'}>Noise: {data.noise}%</p>
         </div>
       );
     }
@@ -169,82 +145,79 @@ export default function FheMode() {
 
   /* CLIENT CONTENT */
   const clientView = (
-    <div className="space-y-6">
-      <div className="bg-black/40 p-4 rounded-lg cyber-border border-accent/20">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-mono text-accent">1. Key & Context Setup</h3>
-          <button onClick={handleGenerateKeys} disabled={isGenerating} className="btn-cyber-accent btn-cyber-sm flex items-center gap-2 border-accent/50 text-accent hover:bg-accent/20">
-            {isGenerating ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Key className="w-4 h-4" />} Init Context
+    <div className="space-y-4">
+      <div className="bg-black/20 p-4 rounded-xl border border-accent/10">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-xs font-mono text-accent font-semibold">1. Key & Context Setup</h3>
+          <button onClick={handleGenerateKeys} disabled={isGenerating} className="flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-mono font-semibold rounded-lg bg-accent/10 border border-accent/15 text-accent hover:bg-accent/15 transition-all disabled:opacity-50">
+            {isGenerating ? <RefreshCw className="w-3 h-3 animate-spin" /> : <Key className="w-3 h-3" />} Init Context
           </button>
         </div>
         {keys && context && (
-           <div className="grid grid-cols-1 gap-2 text-[10px] font-mono opacity-80 break-all">
-             <div className="p-2 bg-accent/10 rounded border border-accent/20 text-accent/80">
+           <div className="grid grid-cols-1 gap-2 text-[9px] font-mono break-all">
+             <div className="p-2 bg-accent/[0.04] rounded-lg border border-accent/10 text-accent/70">
                <Unlock className="w-3 h-3 inline mb-0.5 mr-1" /> Public Key: {keys.publicKey.substring(0,30)}...
              </div>
-             <div className="p-2 bg-red-500/10 rounded border border-red-500/20 text-red-300">
+             <div className="p-2 bg-red-500/[0.04] rounded-lg border border-red-500/10 text-red-300/70">
                <Lock className="w-3 h-3 inline mb-0.5 mr-1" /> Secret Key: {keys.secretKey.substring(0,30)}...
              </div>
              <details className="group cursor-pointer">
-               <summary className="text-[10px] font-mono hover:text-purple-300 transition-colors flex items-center gap-1 p-2 bg-purple-500/10 rounded border border-purple-500/20 text-purple-300/80">
-                 <ChevronRight className="w-3 h-3 group-open:rotate-90 transition-transform" /> View Evaluation Keys (Relin)
+               <summary className="text-[9px] font-mono hover:text-purple-300 transition-colors flex items-center gap-1 p-2 bg-purple-500/[0.04] rounded-lg border border-purple-500/10 text-purple-300/60">
+                 <ChevronRight className="w-3 h-3 group-open:rotate-90 transition-transform" /> Evaluation Keys (Relin)
                </summary>
-               <div className="mt-2 text-[9px] text-purple-300/70 p-2 bg-purple-500/5 rounded border border-purple-500/10">
+               <div className="mt-1.5 text-[8px] text-purple-300/50 p-2 bg-purple-500/[0.03] rounded-lg border border-purple-500/5">
                  <Filter className="w-3 h-3 inline mb-0.5 mr-1" /> {keys.relinKeys.substring(0,30)}...
-                 <p className="mt-1 opacity-80 leading-tight">Evaluation keys are public and sent to the server. They are required to reduce ciphertext size and noise after a multiplication operation via Relinearization.</p>
+                 <p className="mt-1 opacity-70 leading-tight">Required to reduce ciphertext size after multiplication via Relinearization.</p>
                </div>
              </details>
            </div>
         )}
       </div>
 
-      <div className={`bg-black/40 p-4 rounded-lg cyber-border border-accent/20 transition-opacity ${!keys ? 'opacity-30 pointer-events-none' : ''}`}>
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-mono text-accent">2. Encrypt Dataset</h3>
-          <button onClick={handleEncrypt} disabled={isEncrypting || !keys} className="btn-cyber-accent btn-cyber-sm flex items-center gap-2 border-accent/50 text-accent hover:bg-accent/20">
-            {isEncrypting ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Layers className="w-4 h-4" />} Encrypt Data
+      <div className={`bg-black/20 p-4 rounded-xl border border-accent/10 transition-opacity ${!keys ? 'opacity-30 pointer-events-none' : ''}`}>
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-xs font-mono text-accent font-semibold">2. Encrypt Dataset</h3>
+          <button onClick={handleEncrypt} disabled={isEncrypting || !keys} className="flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-mono font-semibold rounded-lg bg-accent/10 border border-accent/15 text-accent hover:bg-accent/15 transition-all disabled:opacity-50">
+            {isEncrypting ? <RefreshCw className="w-3 h-3 animate-spin" /> : <Layers className="w-3 h-3" />} Encrypt
           </button>
         </div>
-        
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-3">
           <div>
-            <input type="number" value={inputA} onChange={e => setInputA(e.target.value)} className="w-full bg-black/50 border border-accent/30 rounded p-2 text-sm text-center font-mono focus:border-accent focus:outline-none" />
-            <div className={`mt-2 text-[10px] font-mono p-2 rounded border break-all h-16 overflow-hidden ${cipherA ? 'bg-green-500/10 border-green-500/40 text-green-400 shadow-[0_0_10px_rgba(34,197,94,0.1)]' : 'border-accent/10 text-transparent'}`}>
-              {cipherA && <div className="absolute top-1 right-1 text-[8px] opacity-70">N:{cipherA.noiseLevel}%</div>}
+            <input type="number" value={inputA} onChange={e => setInputA(e.target.value)} className="w-full bg-black/30 border border-white/10 rounded-lg p-2 text-sm text-center font-mono focus:border-accent/40 focus:outline-none transition-colors" />
+            <div className={`mt-2 text-[9px] font-mono p-2 rounded-lg border break-all h-14 overflow-hidden relative ${cipherA ? 'bg-emerald-500/[0.06] border-emerald-500/15 text-emerald-400' : 'border-white/5 text-transparent'}`}>
+              {cipherA && <div className="absolute top-1 right-1 text-[7px] opacity-50">N:{cipherA.noiseLevel}%</div>}
               {cipherA ? `E(A)=${cipherA.data}` : ''}
             </div>
           </div>
           <div>
-            <input type="number" value={inputB} onChange={e => setInputB(e.target.value)} className="w-full bg-black/50 border border-accent/30 rounded p-2 text-sm text-center font-mono focus:border-accent focus:outline-none" />
-            <div className={`mt-2 text-[10px] font-mono p-2 rounded border break-all h-16 overflow-hidden ${cipherB ? 'bg-green-500/10 border-green-500/40 text-green-400 shadow-[0_0_10px_rgba(34,197,94,0.1)]' : 'border-accent/10 text-transparent'}`}>
-              {cipherB && <div className="absolute top-1 right-1 text-[8px] opacity-70">N:{cipherB.noiseLevel}%</div>}
+            <input type="number" value={inputB} onChange={e => setInputB(e.target.value)} className="w-full bg-black/30 border border-white/10 rounded-lg p-2 text-sm text-center font-mono focus:border-accent/40 focus:outline-none transition-colors" />
+            <div className={`mt-2 text-[9px] font-mono p-2 rounded-lg border break-all h-14 overflow-hidden relative ${cipherB ? 'bg-emerald-500/[0.06] border-emerald-500/15 text-emerald-400' : 'border-white/5 text-transparent'}`}>
+              {cipherB && <div className="absolute top-1 right-1 text-[7px] opacity-50">N:{cipherB.noiseLevel}%</div>}
               {cipherB ? `E(B)=${cipherB.data}` : ''}
             </div>
           </div>
         </div>
-
         {cipherA && phase === 'idle' && (
-          <button onClick={transmitToServer} className="mt-4 w-full bg-accent/20 hover:bg-accent/30 border border-accent/50 p-2 rounded text-accent font-mono text-sm flex justify-center items-center gap-2 transition-all">
-            <Send className="w-4 h-4" /> Transmit Ciphertexts to Server
+          <button onClick={transmitToServer} className="mt-3 w-full bg-accent/10 hover:bg-accent/15 border border-accent/15 p-2 rounded-xl text-accent font-mono text-[11px] flex justify-center items-center gap-2 transition-all">
+            <Send className="w-3.5 h-3.5" /> Transmit to Server
           </button>
         )}
       </div>
 
-      <div className={`bg-black/40 p-4 rounded-lg cyber-border border-accent/20 transition-opacity ${phase !== 'at-client' ? 'opacity-30 pointer-events-none' : ''}`}>
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-mono text-accent">5. Decrypt Result</h3>
-          <button onClick={handleDecrypt} disabled={isDecrypting || phase !== 'at-client'} className="btn-cyber-accent btn-cyber-sm flex items-center gap-2 border-accent/50 text-accent hover:bg-accent/20">
-            {isDecrypting ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Unlock className="w-4 h-4" />} Decrypt
+      <div className={`bg-black/20 p-4 rounded-xl border border-accent/10 transition-opacity ${phase !== 'at-client' ? 'opacity-30 pointer-events-none' : ''}`}>
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-xs font-mono text-accent font-semibold">5. Decrypt Result</h3>
+          <button onClick={handleDecrypt} disabled={isDecrypting || phase !== 'at-client'} className="flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-mono font-semibold rounded-lg bg-accent/10 border border-accent/15 text-accent hover:bg-accent/15 transition-all disabled:opacity-50">
+            {isDecrypting ? <RefreshCw className="w-3 h-3 animate-spin" /> : <Unlock className="w-3 h-3" />} Decrypt
           </button>
         </div>
-        
         {decryptedResult !== null && (
-           <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className={`flex flex-col items-center justify-center p-4 rounded-lg border ${Number.isNaN(decryptedResult) ? 'bg-red-500/10 border-red-500/50' : 'bg-green-500/10 border-green-500/50'}`}>
-             <div className={`text-3xl font-display font-bold ${Number.isNaN(decryptedResult) ? 'text-red-500' : 'text-green-400 animate-pulse-glow shadow-green-500/50 drop-shadow-lg'}`}>
+           <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className={`flex flex-col items-center justify-center p-4 rounded-xl border ${Number.isNaN(decryptedResult) ? 'bg-red-500/[0.06] border-red-500/20' : 'bg-emerald-500/[0.06] border-emerald-500/20'}`}>
+             <div className={`text-3xl font-display font-bold ${Number.isNaN(decryptedResult) ? 'text-red-400' : 'text-emerald-400'}`}>
                {Number.isNaN(decryptedResult) ? "CORRUPT DATA" : decryptedResult}
              </div>
-             <div className={`mt-2 text-[10px] font-mono flex items-center gap-1 ${Number.isNaN(decryptedResult) ? 'text-red-400' : 'text-green-500/80'}`}>
-               {Number.isNaN(decryptedResult) ? "Noise exceeded decryption threshold (100%)" : `Validated: ${inputA} ${computeType === 'ADD' ? '+' : '*'} ${inputB} = ${computeType === 'ADD' ? parseInt(inputA)+parseInt(inputB) : parseInt(inputA)*parseInt(inputB)}`}
+             <div className={`mt-2 text-[10px] font-mono ${Number.isNaN(decryptedResult) ? 'text-red-400/70' : 'text-emerald-500/70'}`}>
+               {Number.isNaN(decryptedResult) ? "Noise exceeded decryption threshold (100%)" : `Validated: ${inputA} ${computeType === 'ADD' ? '+' : '×'} ${inputB} = ${computeType === 'ADD' ? parseInt(inputA)+parseInt(inputB) : parseInt(inputA)*parseInt(inputB)}`}
              </div>
            </motion.div>
         )}
@@ -254,82 +227,65 @@ export default function FheMode() {
 
   /* SERVER CONTENT */
   const serverView = (
-    <div className="space-y-6 h-full flex flex-col justify-center">
+    <div className="space-y-4 h-full flex flex-col justify-center">
       {phase === 'idle' || phase === 'to-server' ? (
-        <div className="flex flex-col items-center justify-center h-full text-orange-400/50 font-mono text-sm gap-4">
-          <Server className="w-12 h-12 opacity-50" />
-          <p className="text-center px-4">Server is idle, awaiting payload.</p>
+        <div className="flex flex-col items-center justify-center h-full text-orange-400/30 font-mono text-sm gap-3 py-8">
+          <Server className="w-10 h-10 opacity-40" />
+          <p className="text-center text-xs">Awaiting payload...</p>
         </div>
       ) : (
-        <div className="space-y-6">
-          <div className="bg-black/40 p-4 rounded-lg cyber-border border-orange-500/30">
-            <h3 className="text-sm font-mono text-orange-400 mb-2">3. Received Ciphertexts</h3>
-            <div className="grid grid-cols-1 gap-2 text-[8px] font-mono break-all text-orange-300 opacity-60">
-              <div className="bg-orange-950/40 p-2 rounded relative">
+        <div className="space-y-4">
+          <div className="bg-black/20 p-4 rounded-xl border border-orange-500/10">
+            <h3 className="text-xs font-mono text-orange-400 font-semibold mb-2">3. Received Ciphertexts</h3>
+            <div className="grid grid-cols-1 gap-1.5 text-[8px] font-mono break-all text-orange-300/50">
+              <div className="bg-orange-500/[0.04] p-2 rounded-lg relative">
                 E(A): {cipherA?.data.substring(0, 30)}...
-                <div className="absolute top-1 right-2 text-[8px] text-accent">N:{cipherA?.noiseLevel}%</div>
+                <span className="absolute top-1 right-2 text-[7px] text-accent/50">N:{cipherA?.noiseLevel}%</span>
               </div>
-              <div className="bg-orange-950/40 p-2 rounded relative">
+              <div className="bg-orange-500/[0.04] p-2 rounded-lg relative">
                 E(B): {cipherB?.data.substring(0, 30)}...
-                <div className="absolute top-1 right-2 text-[8px] text-accent">N:{cipherB?.noiseLevel}%</div>
+                <span className="absolute top-1 right-2 text-[7px] text-accent/50">N:{cipherB?.noiseLevel}%</span>
               </div>
             </div>
           </div>
 
-          <div className={`p-4 rounded-lg transition-all duration-500 ${phase === 'at-server' ? 'bg-orange-950/40 border-2 border-orange-500 shadow-[0_0_30px_rgba(249,115,22,0.3)]' : 'bg-black/40 cyber-border border-orange-500/30'}`}>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-mono text-orange-400">4. Compute FHE Circuit</h3>
+          <div className={`p-4 rounded-xl transition-all duration-500 ${phase === 'at-server' && !cipherResult ? 'bg-orange-500/[0.06] border-2 border-orange-500/40 shadow-[0_0_20px_rgba(249,115,22,0.15)]' : 'bg-black/20 border border-orange-500/10'}`}>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-xs font-mono text-orange-400 font-semibold">4. Compute FHE Circuit</h3>
             </div>
-            {phase === 'at-server' && (
-              <div className="mb-4 animate-pulse bg-orange-500/20 text-orange-300 p-2 rounded-lg border border-orange-500/50 text-xs font-mono font-bold flex items-center justify-center text-center">
-                ⚠️ This is the critical step:<br/>The server computes WITHOUT decrypting the data.
+            {phase === 'at-server' && !cipherResult && (
+              <div className="mb-3 animate-pulse bg-orange-500/10 text-orange-300 p-2.5 rounded-xl border border-orange-500/20 text-[10px] font-mono font-semibold text-center">
+                <AlertTriangle className="w-3 h-3 inline mr-1" />Critical step: The server computes WITHOUT decrypting the data.
               </div>
             )}
-            
-            <div className="flex items-center gap-2 mb-4 bg-black/50 p-1 rounded-lg cyber-border-accent">
-              <button onClick={() => setComputeType('ADD')} className={`px-2 py-1 text-xs font-mono rounded flex-1 ${computeType === 'ADD' ? 'bg-accent/30 text-accent' : 'text-muted-foreground hover:text-foreground'}`}>
-                ADD
-              </button>
-              <button onClick={() => setComputeType('MULT')} className={`px-2 py-1 text-xs font-mono rounded flex-1 ${computeType === 'MULT' ? 'bg-accent/30 text-accent' : 'text-muted-foreground hover:text-foreground'}`}>
-                MULTIPLY
-              </button>
+            <div className="flex items-center gap-1.5 mb-3 bg-black/20 p-1 rounded-xl border border-white/5">
+              <button onClick={() => setComputeType('ADD')} className={`px-2 py-1.5 text-[10px] font-mono rounded-lg flex-1 transition-colors ${computeType === 'ADD' ? 'bg-accent/15 text-accent' : 'text-muted-foreground hover:text-foreground'}`}>ADD</button>
+              <button onClick={() => setComputeType('MULT')} className={`px-2 py-1.5 text-[10px] font-mono rounded-lg flex-1 transition-colors ${computeType === 'MULT' ? 'bg-accent/15 text-accent' : 'text-muted-foreground hover:text-foreground'}`}>MULTIPLY</button>
             </div>
-
-            <button onClick={handleCompute} disabled={isComputing || phase !== 'at-server'} className="w-full btn-cyber-accent btn-cyber-sm flex justify-center items-center gap-2 border-orange-500/50 text-orange-400 hover:bg-orange-500/20 mb-3">
-              {isComputing ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Calculator className="w-4 h-4" />} Execute {computeType}
+            <button onClick={handleCompute} disabled={isComputing || phase !== 'at-server'} className="w-full flex items-center gap-1.5 justify-center px-3 py-1.5 text-[10px] font-mono font-semibold rounded-lg bg-orange-500/10 border border-orange-500/15 text-orange-400 hover:bg-orange-500/15 transition-all disabled:opacity-50 mb-3">
+              {isComputing ? <RefreshCw className="w-3 h-3 animate-spin" /> : <Calculator className="w-3 h-3" />} Execute {computeType}
             </button>
-
-            <p className="text-[10px] text-orange-400/80 my-3 font-mono opacity-80 leading-tight">
-              Addition incurs extremely low noise overhead. Multiplication creates huge polynomial noise growth, risking decryption failure.
-            </p>
-
-            <details className="mb-3 group cursor-pointer">
-              <summary className="text-[10px] font-mono text-orange-400/80 hover:text-orange-400 transition-colors flex items-center gap-1">
-                <ChevronRight className="w-3 h-3 group-open:rotate-90 transition-transform" /> View Math Formula
+            <details className="group cursor-pointer">
+              <summary className="text-[9px] font-mono text-orange-400/60 hover:text-orange-400 transition-colors flex items-center gap-1">
+                <ChevronRight className="w-3 h-3 group-open:rotate-90 transition-transform" /> View Math
               </summary>
-              <div className="mt-2 text-[9px] font-mono text-orange-300 bg-orange-900/20 p-2 border border-orange-500/20 rounded leading-relaxed">
-                {computeType === 'ADD' ? (
-                  <>Formula: <span className="text-white relative z-10">E(a + b) = E(a) ⊕ E(b)</span><br/><span className="mt-1 opacity-60">Additive homomorphism naturally limits noise expansion.</span></>
-                ) : (
-                  <>Formula: <span className="text-white relative z-10">E(a * b) = E(a) ⊗ E(b)</span><br/><span className="mt-1 opacity-60">Exponential noise growth. Requires Relinearization keys to constrain ciphertext bounds.</span></>
-                )}
+              <div className="mt-1.5 text-[8px] font-mono text-orange-300/60 bg-orange-500/[0.04] p-2 border border-orange-500/5 rounded-lg leading-relaxed">
+                {computeType === 'ADD' ? <>E(a+b) = E(a) ⊕ E(b)<br/><span className="opacity-50">Low noise expansion.</span></> : <>E(a×b) = E(a) ⊗ E(b)<br/><span className="opacity-50">Exponential noise growth. Requires Relin keys.</span></>}
               </div>
             </details>
-            
             <AnimatePresence>
               {cipherResult && (
-                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className={`mt-2 text-[10px] font-mono p-3 rounded border text-green-400 break-all h-20 overflow-hidden relative ${cipherResult.noiseLevel >= 100 ? 'bg-red-500/20 border-red-500/50 text-red-400' : 'bg-green-500/10 border-green-500/30 shadow-[0_0_15px_rgba(34,197,94,0.1)]'}`}>
-                  <div className={`absolute top-1 right-2 text-[8px] px-1 rounded ${cipherResult.noiseLevel >= 100 ? 'bg-red-500 text-white' : 'bg-accent/20 text-accent'}`}>
+                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className={`mt-2 text-[9px] font-mono p-3 rounded-lg border break-all h-16 overflow-hidden relative ${cipherResult.noiseLevel >= 100 ? 'bg-red-500/[0.06] border-red-500/20 text-red-400' : 'bg-emerald-500/[0.06] border-emerald-500/15 text-emerald-400'}`}>
+                  <div className={`absolute top-1 right-2 text-[7px] px-1 rounded ${cipherResult.noiseLevel >= 100 ? 'bg-red-500/30 text-red-300' : 'bg-accent/10 text-accent/70'}`}>
                     Noise: {cipherResult.noiseLevel}%
                   </div>
-                  <span className="text-white">E(Res) = </span>{cipherResult.data}
+                  <span className="text-white/60">E(Res) = </span>{cipherResult.data}
                 </motion.div>
               )}
             </AnimatePresence>
-
             {cipherResult && phase === 'at-server' && (
-              <button onClick={transmitToClient} className="mt-4 w-full bg-orange-500/20 hover:bg-orange-500/30 border border-orange-500/50 p-2 rounded text-orange-300 font-mono text-sm flex justify-center items-center gap-2 transition-all">
-                <Send className="w-4 h-4 transform rotate-180" /> Return to Client
+              <button onClick={transmitToClient} className="mt-3 w-full bg-orange-500/10 hover:bg-orange-500/15 border border-orange-500/15 p-2 rounded-xl text-orange-300 font-mono text-[11px] flex justify-center items-center gap-2 transition-all">
+                <Send className="w-3.5 h-3.5 transform rotate-180" /> Return to Client
               </button>
             )}
           </div>
@@ -338,94 +294,88 @@ export default function FheMode() {
     </div>
   );
 
-  /* ATTACKER CONTENT */
   const attackerView = (
     <AnimatePresence>
-      <div className="flex flex-col gap-4 w-full items-center justify-center">
-        {phase === 'to-server' && <DataFlowArrow direction="left-to-right" label="Ciphertexts E(A), E(B)" isEncrypted={true} />}
-        {phase === 'to-client' && <DataFlowArrow direction="right-to-left" label="Result E(A op B)" isEncrypted={true} />}
+      <div className="flex flex-col gap-3 w-full items-center justify-center">
+        {phase === 'to-server' && <DataFlowArrow direction="left-to-right" label="E(A), E(B)" isEncrypted={true} />}
+        {phase === 'to-client' && <DataFlowArrow direction="right-to-left" label="E(A op B)" isEncrypted={true} />}
         {(phase === 'to-server' || phase === 'to-client') && (
-           <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} className="text-[9px] text-red-300/60 leading-tight">
-             Attacker intercepts:<br/>
-             {cipherA ? cipherA.data.substring(0,25) + "..." : "Random Data..."}
+           <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} className="text-[8px] text-red-300/40 leading-tight text-center">
+             Intercepted: {cipherA ? cipherA.data.substring(0,20) + "..." : "…"}
            </motion.div>
         )}
         {phase !== 'to-server' && phase !== 'to-client' && (
-          <div className="h-10 text-[9px] text-red-500/30 uppercase tracking-widest flex items-center text-center">No active transmission</div>
+          <div className="h-8 text-[8px] text-red-500/20 uppercase tracking-widest flex items-center text-center">No transmission</div>
         )}
       </div>
     </AnimatePresence>
   );
 
   return (
-    <div className="w-full flex flex-col gap-6 p-4 pb-20 items-center">
-      <div className="w-full max-w-7xl flex flex-col xl:flex-row gap-6">
-        
-        {/* Main Split Interface */}
-        <div className="flex-1">
-          <div className="glass p-5 rounded-xl cyber-border-accent relative overflow-hidden mb-6 group">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-accent/5 rounded-full blur-[80px] -z-10 group-hover:bg-accent/20 transition-all duration-700"></div>
-            <div className="flex items-center justify-between mb-2">
-              <h2 className="text-2xl font-display font-semibold text-glow-accent flex items-center gap-2">
-                <Activity className="w-6 h-6 text-accent" /> FHE Cloud Deployment
-              </h2>
-            </div>
-            <p className="text-muted-foreground text-sm max-w-2xl">
-              An interactive simulation of Fully Homomorphic Encryption (BFV/CKKS paradigm). Unlike PHE, FHE allows for arbitrary computations (both addition and multiplication) on ciphertexts. However, successive ciphertext multiplications drastically increase underlying algorithmic noise, eventually causing decryption failure (data corruption) if the noise crosses the decryption threshold limit.
+    <div className="w-full flex flex-col items-center overflow-hidden">
+      <section className="w-full max-w-7xl px-4 pt-10 pb-6">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+          <div className="bg-white/[0.02] p-5 rounded-2xl border border-accent/10 relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-accent/30 to-transparent"></div>
+            <h2 className="text-2xl font-display font-bold mb-1.5 flex items-center gap-2">
+              <Activity className="w-5 h-5 text-accent" /> FHE Cloud Deployment
+            </h2>
+            <p className="text-muted-foreground text-xs max-w-2xl leading-relaxed">
+              An interactive simulation of Fully Homomorphic Encryption (BFV/CKKS). FHE allows arbitrary computations on ciphertexts, but successive multiplications increase noise, eventually causing decryption failure.
             </p>
           </div>
+        </motion.div>
+      </section>
 
-          <ClientServerSplit 
-            clientContent={clientView} 
-            serverContent={serverView} 
-            attackerContent={attackerView}
-            narration={getNarration()} 
-          />
-        </div>
-
-        {/* Tracker Panel & Graphics */}
-        <div className="w-full xl:w-80 shrink-0 space-y-4">
-          
-          <div className="glass p-4 rounded-xl cyber-border-accent">
-            <h3 className="text-[11px] font-mono text-accent uppercase tracking-widest mb-3">FHE Noise Growth Visualization</h3>
-            <div className="h-40 w-full overflow-hidden">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={noiseHistory} margin={{ top: 5, right: 10, left: -25, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" vertical={false} />
-                  <XAxis dataKey="step" tick={{ fontSize: 9, fill: '#888' }} axisLine={false} tickLine={false} />
-                  <YAxis domain={[0, 120]} tick={{ fontSize: 9, fill: '#888' }} axisLine={false} tickLine={false} />
-                  <RechartsTooltip content={customTooltip} />
-                  <ReferenceLine y={100} stroke="#ef4444" strokeDasharray="3 3" label={{ position: 'insideTopLeft', value: 'DECRYPT FAIL', fill: '#ef4444', fontSize: 10, offset: 5 }} />
-                  <Line type="monotone" dataKey="noise" stroke="#00d8ff" strokeWidth={2} dot={{ r: 3, fill: '#00d8ff' }} activeDot={{ r: 5 }} animationDuration={500} />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
+      <section className="w-full max-w-7xl px-4 pb-16">
+        <div className="flex flex-col xl:flex-row gap-5">
+          <div className="flex-1">
+            <ClientServerSplit clientContent={clientView} serverContent={serverView} attackerContent={attackerView} narration={getNarration()} />
           </div>
 
-          <div className="glass p-4 rounded-xl cyber-border-accent h-[40vh] flex flex-col">
-            <h3 className="text-sm font-mono text-accent flex items-center gap-2 mb-3 border-b border-accent/20 pb-2">
-              <Activity className="w-4 h-4" /> Operations Log
-            </h3>
-            <div className="flex-1 overflow-y-auto space-y-3 pr-1 custom-scrollbar">
-              {logs.length === 0 ? (
-                <div className="h-full flex items-center justify-center text-muted-foreground text-xs font-mono opacity-50">Log empty</div>
-              ) : (
-                logs.map((log, i) => (
-                  <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} key={i} className="bg-black/60 border-l border-accent/50 p-2 rounded shadow-sm">
-                    <p className="text-[10px] font-mono text-foreground/90">{log.msg}</p>
-                    {log.noise !== undefined && (
-                      <p className={`text-[9px] font-mono mt-1 ${log.noise >= 100 ? 'text-red-400' : 'text-accent/80'}`}>
-                        Noise Level: {log.noise}%
-                      </p>
-                    )}
-                  </motion.div>
-                ))
-              )}
+          <div className="w-full xl:w-72 shrink-0 space-y-4">
+            {/* Noise Chart */}
+            <div className="bg-white/[0.02] p-4 rounded-2xl border border-accent/10">
+              <h3 className="text-[10px] font-mono text-accent uppercase tracking-wider mb-3 font-semibold">Noise Growth</h3>
+              <div className="h-36 w-full overflow-hidden">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={noiseHistory} margin={{ top: 5, right: 10, left: -25, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
+                    <XAxis dataKey="step" tick={{ fontSize: 8, fill: '#888' }} axisLine={false} tickLine={false} />
+                    <YAxis domain={[0, 120]} tick={{ fontSize: 8, fill: '#888' }} axisLine={false} tickLine={false} />
+                    <RechartsTooltip content={customTooltip} />
+                    <ReferenceLine y={100} stroke="#ef4444" strokeDasharray="3 3" label={{ position: 'insideTopLeft', value: 'FAIL', fill: '#ef4444', fontSize: 9 }} />
+                    <Line type="monotone" dataKey="noise" stroke="hsl(190 100% 50%)" strokeWidth={2} dot={{ r: 2.5, fill: 'hsl(190 100% 50%)' }} activeDot={{ r: 4 }} animationDuration={500} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            {/* Log */}
+            <div className="bg-white/[0.02] p-4 rounded-2xl border border-accent/10 h-[35vh] flex flex-col">
+              <h3 className="text-xs font-mono text-accent flex items-center gap-2 mb-3 pb-2 border-b border-white/5 font-semibold">
+                <Activity className="w-3.5 h-3.5" /> Operations Log
+              </h3>
+              <div className="flex-1 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
+                {logs.length === 0 ? (
+                  <div className="h-full flex items-center justify-center text-muted-foreground text-xs font-mono opacity-30">Empty</div>
+                ) : (
+                  logs.map((log, i) => (
+                    <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} key={i} className="bg-black/20 border-l-2 border-accent/30 p-2 rounded-r-lg">
+                      <p className="text-[9px] font-mono text-foreground/70">{log.msg}</p>
+                      {log.noise !== undefined && (
+                        <p className={`text-[8px] font-mono mt-0.5 ${log.noise >= 100 ? 'text-red-400' : 'text-accent/60'}`}>
+                          Noise: {log.noise}%
+                        </p>
+                      )}
+                    </motion.div>
+                  ))
+                )}
+              </div>
             </div>
           </div>
-          
         </div>
-      </div>
+      </section>
     </div>
   );
 }

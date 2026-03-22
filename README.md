@@ -1,105 +1,233 @@
-# HE.Compute: Homomorphic Encryption Research Simulation
+<p align="center">
+  <img src="https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react" />
+  <img src="https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square&logo=typescript" />
+  <img src="https://img.shields.io/badge/Vite-5-646CFF?style=flat-square&logo=vite" />
+  <img src="https://img.shields.io/badge/TailwindCSS-3-06B6D4?style=flat-square&logo=tailwindcss" />
+  <img src="https://img.shields.io/badge/Framer_Motion-11-FF0055?style=flat-square&logo=framer" />
+</p>
 
-A research-grade, interactive web simulation demonstrating the architectural flows, cryptographic properties, and real-world implementation challenges of Homomorphic Encryption (HE). 
+<h1 align="center">🔐 HE.Compute</h1>
+<h3 align="center">Homomorphic Encryption — Interactive Research Simulation</h3>
 
-Built as an educational tool for academic presentations and distinction-level university projects, this system goes beyond traditional text-based explanations to provide a fully functioning zero-knowledge algebraic environment running entirely in the browser.
+<p align="center">
+  <em>A browser-based, research-grade demonstration of secure outsourced computation<br/>using Partially and Fully Homomorphic Encryption schemes.</em>
+</p>
+
+---
+
+## 📋 Table of Contents
+
+- [Problem Statement](#-problem-statement)
+- [What is Homomorphic Encryption?](#-what-is-homomorphic-encryption)
+- [Key Comparison](#-traditional-encryption-vs-homomorphic-encryption)
+- [PHE vs FHE](#-phe-vs-fhe)
+- [System Architecture](#-system-architecture)
+- [Features](#-features)
+- [Getting Started](#-getting-started)
+- [Demo Walkthrough](#-demo-walkthrough)
+- [Academic Limitations](#-academic-limitations)
+- [Future Work](#-future-work)
+- [Tech Stack](#-tech-stack)
 
 ---
 
 ## 🎯 Problem Statement
 
-Traditional cloud computing requires **Data Exfiltration Risk**. When a client outsources computation (like data aggregation or machine learning) to an external cloud server, the standard protocol involves encrypting data in transit (TLS/SSL) and at rest (AES), but **decrypting it in memory (RAM)** to perform the actual calculations.
+Modern cloud computing demands that clients outsource data processing to external servers. Traditional security protocols protect data **at rest** (AES disk encryption) and **in transit** (TLS/SSL), but require the server to **decrypt data in memory** to perform any computation.
 
-If the cloud server is breached, or an insider acts maliciously (the "Honest-but-Curious" Threat Model), the raw plaintext data is entirely exposed.
+This creates a fundamental vulnerability:
 
-This application demonstrates the solution: **Homomorphic Encryption**, which allows the untrusted server to compute mathematically directly on the ciphertexts *without ever decrypting them*.
+> If the cloud server is compromised — whether by an external breach, insider threat, or the **"Honest-but-Curious"** adversarial model — the raw plaintext data is entirely exposed.
+
+**HE.Compute** demonstrates the solution: **Homomorphic Encryption**, a cryptographic paradigm that allows an untrusted server to compute directly on encrypted data, without ever decrypting it.
 
 ---
 
 ## 🧠 What is Homomorphic Encryption?
 
-Homomorphic encryption is a revolutionary cryptographic scheme that acts as a structural homomorphism between the plaintext space and ciphertext space. 
+Homomorphic Encryption (HE) is a class of encryption schemes that preserves a **structural homomorphism** between the plaintext algebraic space and the ciphertext algebraic space.
 
-It allows specific algebraic operations, such as addition or multiplication, to be performed directly on ciphertext (`C`), generating a manipulated encrypted result which, when decrypted by the Client's private key (`SK`), precisely matches the result of the operations as if they had been performed on the plaintext (`P`).
+This means specific operations (addition, multiplication) can be performed on ciphertexts, producing an encrypted result which — when decrypted with the private key — exactly matches the result of the same operations on the original plaintexts:
 
-$$ Dec(Enc(A) \otimes Enc(B)) = A \oplus B $$
+```
+Dec( Enc(A) ⊕ Enc(B) ) = A + B
+Dec( Enc(A) ⊗ Enc(B) ) = A × B
+```
+
+The server **does not possess the private key** and therefore **cannot decrypt the data** at any stage of computation.
 
 ---
 
-## ⚖️ PHE vs FHE
+## ⚖️ Traditional Encryption vs Homomorphic Encryption
 
-HE.Compute strictly differentiates between two major generations of homomorphic encryption:
+| Property | Traditional Encryption | Homomorphic Encryption |
+|---|---|---|
+| **Data at rest** | ✅ Protected | ✅ Protected |
+| **Data in transit** | ✅ Protected | ✅ Protected |
+| **Data in use (computation)** | ❌ **Exposed** — must decrypt | ✅ **Protected** — compute on ciphertext |
+| **Server trust required** | Full trust required | Zero trust required |
 
-### 1. Partially Homomorphic Encryption (PHE) - *Paillier Scheme*
-- **Capabilities:** Allows only ONE type of operation (e.g., unlimited Addition).
-- **Implementation:** This demo uses a Native JavaScript `BigInt` implementation of the asymmetric **Paillier Cryptosystem**.
-- **Performance:** Extremely fast. Capable of evaluating simple financial aggregations (like Secure Payroll) or electronic voting tallies in milliseconds.
-- **Math:** $E(m_1) \cdot E(m_2) \mod n^2 = E(m_1 + m_2)$
+> **Key takeaway:** Traditional encryption protects data at rest and in transit, but not during computation. Homomorphic encryption extends protection to **data in use**.
 
-### 2. Fully Homomorphic Encryption (FHE) - *CKKS/BFV Simulated*
-- **Capabilities:** Allows arbitrary operations (both Addition and Multiplication), acting as a Turing-complete encrypted compute environment.
-- **Implementation:** This demo uses an interactive *Simulation* of an FHE circuit to accurately model the "Noise Growth" penalty.
-- **Performance:** Introduces extreme computational latency and ciphertext bloat. Executing multiplications creates exponential algorithmic "noise" that risks corrupting the polynomial vector if it exceeds the decryption threshold limit.
+---
+
+## 🔬 PHE vs FHE
+
+HE.Compute implements and compares two generations of homomorphic encryption:
+
+### Partially Homomorphic Encryption (PHE) — Paillier Cryptosystem
+
+| Aspect | Detail |
+|---|---|
+| **Supported operations** | Unlimited **addition** only |
+| **Implementation** | Native JavaScript `BigInt` with Web Workers |
+| **Performance** | Fast — millisecond-range computation |
+| **Use cases** | Secure payroll aggregation, e-voting tallies, financial ledgers |
+| **Core formula** | `Enc(a + b) = Enc(a) × Enc(b) mod n²` |
+
+### Fully Homomorphic Encryption (FHE) — BFV/CKKS Simulation
+
+| Aspect | Detail |
+|---|---|
+| **Supported operations** | Arbitrary **addition + multiplication** (Turing-complete) |
+| **Implementation** | Algorithmic simulation with accurate noise modelling |
+| **Performance** | Extreme latency — orders of magnitude slower than plaintext |
+| **Critical challenge** | **Noise accumulation** — multiplications grow ciphertext noise exponentially; exceeding the threshold corrupts decryption |
+| **Core formula** | `Enc(a × b) = Enc(a) ⊗ Enc(b)` (requires Relinearization keys) |
 
 ---
 
 ## 🏛️ System Architecture
 
-The application implements a strict **Client-Server Split View**:
+The application implements a strict **three-domain Client–Server split**:
 
-1. **Trusted Client Domain:** Holds the Private Key (sk). Plaintext data is strictly generated, encrypted, and decrypted here.
-2. **Network Interception Zone:** Visualizes exactly what an attacker or Man-In-the-Middle sees (semantically secure random noise).
-3. **Untrusted Server Domain (Honest-but-Curious):** Receives ciphertexts. Evaluates instructions blindly. Holds zero key access.
+```
+┌─────────────────────┐     ┌───────────────┐     ┌─────────────────────────┐
+│   TRUSTED CLIENT    │     │   NETWORK     │     │   UNTRUSTED SERVER      │
+│                     │────▶│   ATTACKER    │────▶│   (Honest-but-Curious)  │
+│  • Key Generation   │     │               │     │                         │
+│  • Encryption       │     │  Sees ONLY    │     │  • Receives ciphertexts │
+│  • Decryption       │◀────│  random noise │◀────│  • Homomorphic compute  │
+│                     │     │               │     │  • Zero key access      │
+│  Holds: sk, pk      │     └───────────────┘     │  Holds: pk, evk only    │
+└─────────────────────┘                           └─────────────────────────┘
+```
 
----
-
-## 📸 Screenshots
-
-*(Replace these placeholders with actual screenshots of your deployment)*
-
-![Architecture Models](./docs/architecture.png)
-> *System & Threat Models comparison.*
-
-![Paillier Evaluation](./docs/phe-mode.png)
-> *Interactive PHE Mode demonstrating homomorphic summation.*
-
-![FHE Noise Visualizer](./docs/fhe-mode.png)
-> *FHE Noise Limit tracking visualization utilizing Recharts.*
+- **Trusted Client** — Generates the key pair `(pk, sk)`. All plaintext operations (encryption and decryption) occur exclusively within this boundary. The private key **never** leaves this domain.
+- **Network Interception Zone** — Visualises what a Man-in-the-Middle attacker observes: semantically secure, statistically indistinguishable random noise.
+- **Untrusted Server** — Receives only ciphertexts and evaluation keys. Executes homomorphic circuits blindly. The server does not possess the private key and therefore cannot decrypt the data.
 
 ---
 
-## 🚀 How to Run the Demo
+## ✨ Features
 
-### Demo Presentation Mode (Auto-Play)
+| Feature | Description |
+|---|---|
+| **Interactive PHE Demo** | Real Paillier encryption/decryption using BigInt + Web Workers |
+| **FHE Noise Simulator** | Accurate noise-growth visualisation with Recharts line graphs |
+| **Client–Server Split View** | Three-panel UI showing Trusted Client, Network Attacker, and Untrusted Server |
+| **Guided Payroll Scenario** | End-to-end auto-play demo simulating secure cloud payroll processing |
+| **Progressive Math Disclosure** | Collapsible "View Math" panels for core cryptographic formulas |
+| **Real-time Narration Panel** | Step-by-step explanation of what is happening and why it matters |
+| **Critical Step Highlighting** | Visual emphasis (glow, animation) during the server computation step |
+| **System & Threat Model Page** | Formal comparison of traditional vs. homomorphic security architectures |
+| **Performance Analytics** | Stacked bar chart comparing plaintext, PHE, and FHE latency profiles |
 
-Navigate to the **Demo Gallery -> Secure Payroll**. Click the `Demo Presentation Mode (Auto-Play)` button. 
-The system will automatically advance through a 6-stage real-world simulation:
-1. Encrypting local client salaries.
-2. Transmitting ciphertexts across the network.
-3. Server receiving meaningless arrays.
-4. Server executing the homomorphic circuit.
-5. Server returning the encrypted aggregate.
-6. Client utilizing the Private Key to decrypt the final company total.
+---
 
-*Toggle between "Beginner" and "Academic" modes in the header to shift the UI from layman terminology to deep algorithmic mathematics!*
+## 🚀 Getting Started
+
+### Prerequisites
+
+- **Node.js** ≥ 18
+- **npm** ≥ 9
+
+### Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/Danindu05/homomorphic-encryption.git
+cd homomorphic-encryption/encrypt-compute-main
+
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+```
+
+The application will be available at `http://localhost:5173`.
+
+### Production Build
+
+```bash
+npm run build
+npm run preview
+```
+
+---
+
+## 🎬 Demo Walkthrough
+
+### Auto-Play Presentation Mode
+
+Navigate to **Demo Gallery → Secure Payroll** and click **🚀 Demo Presentation Mode (Auto-Play)**.
+
+The system automatically advances through a 7-stage real-world simulation:
+
+| Step | Action | Domain |
+|------|--------|--------|
+| 0 | Input plaintext salary values | Client |
+| 1 | Encrypt each salary into a distinct ciphertext | Client |
+| 2 | Transmit ciphertexts over untrusted network | Network |
+| 3 | Server receives encrypted payload (zero-knowledge state) | Server |
+| 4 | **⚠️ Critical step:** Server computes encrypted total WITHOUT decrypting | Server |
+| 5 | Return encrypted result to client | Network |
+| 6 | Client decrypts using private key — total matches exactly | Client |
+
+> **💡 Key Insight:** Computation is performed without revealing the underlying data.
 
 ---
 
 ## ⚠️ Academic Limitations
 
-This application is built for **educational and presentational purposes**. 
+This application is built for **educational demonstration and academic presentation purposes**.
 
-1. **PHE (Paillier):** The implementation uses pure JS `BigInt` with simple probabilistic prime generation tools meant for speed and visual demonstration in a browser. It is incredibly effective for university presentations but is **NOT** meant for production cryptographic payloads.
-2. **FHE (CKKS/BFV):** The FHE module presented is a carefully constructed **simulation** designed to visually demonstrate the real-world latency, architecture pipeline, and "noise accumulation" characteristic of actual FHE systems. Valid production FHE implementations (e.g., Microsoft SEAL, Zama Concrete) require heavy WebAssembly configurations and server-grade memory.
-3. **Key Sizes:** Paillier key generation uses heavily reduced bit-lengths (128/256-bit) to ensure the UI Thread (via Web Workers) processes inputs fast enough for a fluid demonstration.
+| Limitation | Explanation |
+|---|---|
+| **Reduced key sizes** | Paillier uses 128/256-bit keys (instead of 2048-bit) to ensure fluid browser performance via JavaScript BigInt. These are **not** cryptographically secure for production use. |
+| **FHE is simulated** | The FHE module is an algorithmic simulation designed to accurately model noise accumulation, latency, and architecture — not a binding to real FHE libraries (e.g., Microsoft SEAL, OpenFHE). |
+| **PHE is addition-only** | The Paillier cryptosystem supports strictly additive homomorphism. Multiplicative operations require fundamentally different schemes (e.g., ElGamal) or FHE. |
+| **Single-threaded compute** | Web Workers are used for key generation, but homomorphic operations run on the main thread for UI responsiveness. |
 
 ---
 
 ## 🔮 Future Work
 
-- **WASM FHE Implementation:** Replacing the FHE simulator with compiled WebAssembly bindings directly mapping to the `OpenFHE` C++ library to perform real multi-party computations.
-- **Relinearization Visualizer:** Adding an interactive step allowing users to manually generate secondary Evaluation Keys to "scrub" noise growth from FHE ciphertexts.
-- **Multi-key Homomorphic Encryption (MKHE):** Demonstrating architectures where multiple distinct clients combine ciphertexts strictly encrypted under different keys.
+- **WebAssembly FHE:** Compile OpenFHE/Microsoft SEAL via Emscripten to run legitimate CKKS/BFV operations entirely in the browser.
+- **Hardware Acceleration:** Leverage WebGPU APIs for polynomial multiplication and RNS transformation offloading.
+- **Relinearization Visualiser:** Interactive step allowing users to generate Evaluation Keys and observe noise reduction in real time.
+- **Multi-Key HE (MKHE):** Demonstrate architectures where multiple clients combine ciphertexts encrypted under distinct keys.
+- **Distributed Server:** Deploy a real Express.js backend to physically isolate the untrusted computation environment from the client.
 
 ---
-*Built with React 18, Tailwind CSS, shadcn/ui, Framer Motion, and Native JS BigInt.*
+
+## 🛠️ Tech Stack
+
+| Layer | Technology |
+|---|---|
+| **Framework** | React 18 + TypeScript |
+| **Build tool** | Vite 5 |
+| **Styling** | Tailwind CSS 3, shadcn/ui |
+| **Animations** | Framer Motion 11 |
+| **Charts** | Recharts |
+| **Cryptography** | Native JavaScript BigInt (Paillier), Algorithmic FHE Simulation |
+| **Concurrency** | Web Workers for key generation |
+| **Icons** | Lucide React |
+
+---
+
+<p align="center">
+  <sub>Built for academic research and presentation purposes.</sub><br/>
+  <sub>© 2026 — HE.Compute</sub>
+</p>
