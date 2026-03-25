@@ -270,7 +270,7 @@ export default function FheMode() {
                 <ChevronRight className="w-3 h-3 group-open:rotate-90 transition-transform" /> View Math
               </summary>
               <div className="mt-1.5 text-[8px] font-mono text-orange-300/60 bg-orange-500/[0.04] p-2 border border-orange-500/5 rounded-lg leading-relaxed">
-                {computeType === 'ADD' ? <>E(a+b) = E(a) ⊕ E(b)<br/><span className="opacity-50">Low noise expansion.</span></> : <>E(a×b) = E(a) ⊗ E(b)<br/><span className="opacity-50">Exponential noise growth. Requires Relin keys.</span></>}
+                {computeType === 'ADD' ? <>E(a+b) = E(a) ⊕ E(b)<br/><span className="opacity-50">Low noise expansion.</span></> : <>E(a×b) = E(a) ⊗ E(b)<br/><span className="opacity-50">Higher noise growth. Fresh multiplies are usually recoverable, but deeper circuits trend toward failure.</span></>}
               </div>
             </details>
             <AnimatePresence>

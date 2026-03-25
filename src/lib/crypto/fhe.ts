@@ -26,6 +26,7 @@ export interface FheCiphertext {
   data: string; // Simulated payload
   _actualValue: number; // Hidden plaintext value for simulation math
   noiseLevel: number;
+  multiplicativeDepth: number;
 }
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
@@ -60,6 +61,7 @@ export class FheSimulator {
       data: `CIPHER[${mockGarble}]`,
       _actualValue: value,
       noiseLevel: 10,
+      multiplicativeDepth: 0,
     };
   }
 
@@ -73,22 +75,33 @@ export class FheSimulator {
     // Addition is fast in FHE and noise grows slightly
     await sleep(10);
     const mockGarble = Array.from({length: 50}, () => Math.random().toString(36).charAt(2)).join('');
+    const nextDepth = Math.max(c1.multiplicativeDepth, c2.multiplicativeDepth);
     return {
       data: `CIPHER[${mockGarble}]`,
       _actualValue: c1._actualValue + c2._actualValue,
-      noiseLevel: Math.max(c1.noiseLevel, c2.noiseLevel) + 2,
+      noiseLevel: Math.min(99, Math.max(c1.noiseLevel, c2.noiseLevel) + 2 + nextDepth),
+      multiplicativeDepth: nextDepth,
     };
   }
 
   static async multiply(c1: FheCiphertext, c2: FheCiphertext, relinKeys: string): Promise<FheCiphertext> {
-    // Multiplication is VERY slow in FHE and noise grows geometrically
-    // Also requires relinearization
+    // Multiplication is the expensive operation in FHE. It raises circuit depth,
+    // increases noise sharply, and then relinearization trims part of that growth.
     await sleep(250); 
     const mockGarble = Array.from({length: 60}, () => Math.random().toString(36).charAt(2)).join('');
+    const nextDepth = Math.max(c1.multiplicativeDepth, c2.multiplicativeDepth) + 1;
+    const magnitudePenalty = Math.min(12, Math.ceil(Math.log2(Math.abs(c1._actualValue * c2._actualValue) + 1)));
+    const relinReduction = relinKeys ? 10 : 0;
+    const nextNoise = Math.min(
+      100,
+      Math.max(c1.noiseLevel, c2.noiseLevel) + 22 + nextDepth * 16 + magnitudePenalty - relinReduction
+    );
+
     return {
       data: `CIPHER[${mockGarble}]`,
       _actualValue: c1._actualValue * c2._actualValue,
-      noiseLevel: c1.noiseLevel * c2.noiseLevel,
+      noiseLevel: nextNoise,
+      multiplicativeDepth: nextDepth,
     };
   }
 }

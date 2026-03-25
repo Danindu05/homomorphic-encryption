@@ -81,12 +81,7 @@ export function AppLayout() {
         <Outlet />
       </main>
 
-      {/* Footer */}
-      <footer className="w-full border-t border-white/5 py-6 text-center">
-        <p className="text-[10px] text-muted-foreground font-mono tracking-wider">
-          Built for academic research and presentation purposes &middot; React &middot; TypeScript &middot; Tailwind CSS
-        </p>
-      </footer>
+      
     </div>
   );
 }
