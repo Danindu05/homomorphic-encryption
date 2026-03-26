@@ -1,19 +1,7 @@
-<p align="center">
-  <img src="https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react" />
-  <img src="https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square&logo=typescript" />
-  <img src="https://img.shields.io/badge/Vite-5-646CFF?style=flat-square&logo=vite" />
-  <img src="https://img.shields.io/badge/TailwindCSS-3-06B6D4?style=flat-square&logo=tailwindcss" />
-  <img src="https://img.shields.io/badge/Framer_Motion-11-FF0055?style=flat-square&logo=framer" />
-</p>
 
-<h1 align="center">🔐 HE.Compute</h1>
-<h3 align="center">Homomorphic Encryption — Interactive Research Simulation</h3>
+<h1 align="center">🔐 Homomorphic Encryption
+</h1>
 
-<p align="center">
-  <em>A browser-based, research-grade demonstration of secure outsourced computation<br/>using Partially and Fully Homomorphic Encryption schemes.</em>
-</p>
-
----
 
 ## 📋 Table of Contents
 
@@ -102,15 +90,15 @@ HE.Compute implements and compares two generations of homomorphic encryption:
 The application implements a strict **three-domain Client–Server split**:
 
 ```
-┌─────────────────────┐     ┌───────────────┐     ┌─────────────────────────┐
-│   TRUSTED CLIENT    │     │   NETWORK     │     │   UNTRUSTED SERVER      │
+┌─────────────────────┐      ┌───────────────┐      ┌─────────────────────────┐
+│   TRUSTED CLIENT    │      │   NETWORK     │      │   UNTRUSTED SERVER      │
 │                     │────▶│   ATTACKER    │────▶│   (Honest-but-Curious)  │
-│  • Key Generation   │     │               │     │                         │
-│  • Encryption       │     │  Sees ONLY    │     │  • Receives ciphertexts │
+│  • Key Generation   │      │               │      │                         │
+│  • Encryption       │      │  Sees ONLY    │      │  • Receives ciphertexts │
 │  • Decryption       │◀────│  random noise │◀────│  • Homomorphic compute  │
-│                     │     │               │     │  • Zero key access      │
-│  Holds: sk, pk      │     └───────────────┘     │  Holds: pk, evk only    │
-└─────────────────────┘                           └─────────────────────────┘
+│                     │      │               │      │  • Zero key access      │
+│  Holds: sk, pk      │      └───────────────┘      │  Holds: pk, evk only    │
+└─────────────────────┘                             └─────────────────────────┘
 ```
 
 - **Trusted Client** — Generates the key pair `(pk, sk)`. All plaintext operations (encryption and decryption) occur exclusively within this boundary. The private key **never** leaves this domain.
@@ -202,16 +190,6 @@ This application is built for **educational demonstration and academic presentat
 
 ---
 
-## 🔮 Future Work
-
-- **WebAssembly FHE:** Compile OpenFHE/Microsoft SEAL via Emscripten to run legitimate CKKS/BFV operations entirely in the browser.
-- **Hardware Acceleration:** Leverage WebGPU APIs for polynomial multiplication and RNS transformation offloading.
-- **Relinearization Visualiser:** Interactive step allowing users to generate Evaluation Keys and observe noise reduction in real time.
-- **Multi-Key HE (MKHE):** Demonstrate architectures where multiple clients combine ciphertexts encrypted under distinct keys.
-- **Distributed Server:** Deploy a real Express.js backend to physically isolate the untrusted computation environment from the client.
-
----
-
 ## 🛠️ Tech Stack
 
 | Layer | Technology |
@@ -225,9 +203,3 @@ This application is built for **educational demonstration and academic presentat
 | **Concurrency** | Web Workers for key generation |
 | **Icons** | Lucide React |
 
----
-
-<p align="center">
-  <sub>Built for academic research and presentation purposes.</sub><br/>
-  <sub>© 2026 — HE.Compute</sub>
-</p>
